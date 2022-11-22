@@ -70,5 +70,8 @@ def create_file(file_path, file_name, file_id=0):
 if __name__ == "__main__":
     today = datetime.date.today()
 
+    print("Hi! I'll be generating your class note, please give me a location to place it in...")
     file_path = get_directory()
+    print("Great! Generating the note Markdown file and placing it in " + file_path)
     create_file(file_path, today.strftime("%b-%d-%Y"))
+    print("All done, have a wonderful day!")
