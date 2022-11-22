@@ -13,7 +13,6 @@ def get_directory():
         print("Error: Could not get directory")
         exit()
 
-
 def create_file(file_path, file_name, file_id=0):
     if file_id == 0:
         directory = file_path + "/" + file_name + ".md"
@@ -66,12 +65,28 @@ def create_file(file_path, file_name, file_id=0):
     except FileExistsError:
         create_file(file_path, file_name, file_id + 1)
 
+def open_dir(dir_path):
+    import subprocess
+    import platform
+
+    if platform.system() == "Windows":
+        subprocess.Popen(["explorer", dir_path])
+    elif platform.system() == "Darwin":
+        subprocess.Popen(["open", dir_path])
+    elif platform.system() == "Linux":
+        subprocess.Popen(["xdg-open", dir_path])
+    else:
+        print("Error: Could not open directory, operating system not supported.")
+        exit()
 
 if __name__ == "__main__":
     today = datetime.date.today()
 
     print("Hi! I'll be generating your class note, please give me a location to place it in...")
     file_path = get_directory()
+
     print("Great! Generating the note Markdown file and placing it in " + file_path)
     create_file(file_path, today.strftime("%b-%d-%Y"))
-    print("All done, have a wonderful day!")
+    
+    print("All done, opening the file's location. Have a wonderful day!")
+    open_dir(file_path)
