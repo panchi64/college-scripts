@@ -14,14 +14,21 @@ from selenium.common.exceptions import WebDriverException
 # To create and hydrate the ics calendar file
 import pytz
 import os
+
 import icalendar
 from icalendar import Calendar, Event
+
 from pathlib import Path
+
 from datetime import datetime, timedelta
 from dateutil import rrule
 
 # Information parsing
 import re
+
+# Asking user where to place the created .ics file
+from tkinter import Tk
+from tkinter import filedialog
 
 # Calculate the date x amount of weeks from given date
 def get_date_x_weeks_later(date, num_weeks):
@@ -67,7 +74,7 @@ assert "Matrícula" in browser.title
 browser.find_element(by=By.CSS_SELECTOR, value="a[href*='matricula/appviewmtr.php']").click()
 assert "Clases Matriculadas" in browser.title
 
-# Make a list of all the classes
+# Make a list of all the courses
 class_elements = browser.find_elements(by=By.CLASS_NAME, value="even")
 class_elements += browser.find_elements(by=By.CLASS_NAME, value="odd")
 
@@ -75,13 +82,19 @@ class_list = []
 for element in class_elements:
     class_list.append(element.text)
 
-# Create .ics file, filter each item in the class list and add it as an event to the ics file
-parent_dir = str(Path(__file__).parent) + "/"
+# Ask the user where to place the generated .ics file
+try:
+    Tk().withdraw()
+    parent_dir = filedialog.askdirectory()
+except:
+    print("Error: Could not get the directory from the given selection.")
+    exit()
+
 # Time the class starts and ends
 pr_tz = pytz.timezone("America/Puerto_Rico")
 
 cal = Calendar()
-cal.add("version", "2.0")
+cal.add("version", "2.1")
 cal.add("prodid", "Francisco-Casiano")
 cal.add("calscale", "gregorian")
 
@@ -90,6 +103,7 @@ tzc = icalendar.Timezone()
 tzc.add('tzid', 'America/Puerto_Rico')
 tzc.add('x-lic-location', 'America/Puerto_Rico')
 
+# TODO: Check these lines there may be a logic issue here
 tzs = icalendar.TimezoneStandard()
 tzs.add('TZOFFSETFROM', timedelta(hours=-4))
 tzs.add('TZOFFSETTO', timedelta(hours=-4))
@@ -99,23 +113,17 @@ tzs.add('dtstart', datetime(1970, 1, 1, 0, 0, 0))
 tzc.add_component(tzs)
 cal.add_component(tzc)
 
-    # Iterate through the list of classes and create events lasting a semester (17 weeks) for each class on their corresponding days
-
-# Unique Event Identifier
 uid = 0
 
+# Iterate through the list of classes and create events lasting a semester (17 weeks) for each class on their corresponding days
 for c in class_list:
     try:
         # Parse information
         name = re.search(r"[A-Z]{4}\d{4}", c).group()
-
         desc = re.search(r"\n(.*)\n*(.*)", c).group()
-
         section = re.search(r"\s\d{3}\s", c).group()
         section = section.strip()
-
         room = re.search(r"[A-Z]+[ ]\d{3}[A-Z]*", c).group()
-
         days = re.search(r"\s\s[J-W]{1,5}\s\s", c).group()
         days = days.strip()
 
@@ -145,6 +153,7 @@ for c in class_list:
     except AttributeError as e:
         print("One of the attributes was not found. More details: " + e)
 
+# Create .ics file
 cal_file = open(os.path.join(parent_dir, "class_schedule.ics"), "wb")
 cal_file.write(cal.to_ical())
 cal_file.close()
