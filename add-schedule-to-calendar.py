@@ -167,3 +167,4 @@ cal_file.write(cal.to_ical())
 cal_file.close()
 
 browser.quit()
+print("All done! Have a wonderful day :D")
