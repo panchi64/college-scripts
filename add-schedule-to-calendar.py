@@ -56,7 +56,7 @@ def days_class_happens(days):
     return response
 
 # Open the old UPRM portal with selenium
-print("Downloading Google Chrome for automated usage.")
+print("Downloading Google Chrome for automated usage...")
 # TODO: See if there is a way to completely remove all traces of the script running by deleting the chrome driver after script completion.
 browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
@@ -70,7 +70,7 @@ WebDriverWait(browser, 600).until(EC.url_contains("home.php"))
 assert "My Home" in browser.title
 
 # Direct the user into the schedule page
-print("Directing to class schedule page...")
+print("Great! Redirecting you to the class schedule page...")
 browser.find_element(by=By.XPATH, value="//*[@title='Services for Students']").click()
 assert "Estudiantes" in browser.title
 
