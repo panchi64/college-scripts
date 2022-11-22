@@ -56,15 +56,20 @@ def days_class_happens(days):
     return response
 
 # Open the old UPRM portal with selenium
+print("Downloading Google Chrome for automated usage.")
 browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+
+print("Google Chrome installed, launching to Old UPRM Portal")
 browser.get("https://home.uprm.edu/")
 assert "LOGIN" in browser.title
 
 # Wait for the user to log in (timeout of 10 mins)
+print("Please log in...")
 WebDriverWait(browser, 600).until(EC.url_contains("home.php"))
 assert "My Home" in browser.title
 
 # Direct the user into the schedule page
+print("Directing to class schedule page...")
 browser.find_element(by=By.XPATH, value="//*[@title='Services for Students']").click()
 assert "Estudiantes" in browser.title
 
@@ -75,6 +80,7 @@ browser.find_element(by=By.CSS_SELECTOR, value="a[href*='matricula/appviewmtr.ph
 assert "Clases Matriculadas" in browser.title
 
 # Make a list of all the courses
+print("Gathering class details...")
 class_elements = browser.find_elements(by=By.CLASS_NAME, value="even")
 class_elements += browser.find_elements(by=By.CLASS_NAME, value="odd")
 
@@ -83,6 +89,7 @@ for element in class_elements:
     class_list.append(element.text)
 
 # Ask the user where to place the generated .ics file
+print("Class information found, file is ready to be generated. Please select where to place the calendar file:")
 try:
     Tk().withdraw()
     parent_dir = filedialog.askdirectory()
@@ -91,10 +98,11 @@ except:
     exit()
 
 # Time the class starts and ends
+print("Creating file and placing it in " + parent_dir)
 pr_tz = pytz.timezone("America/Puerto_Rico")
 
 cal = Calendar()
-cal.add("version", "2.1")
+cal.add("version", "2.0")
 cal.add("prodid", "Francisco-Casiano")
 cal.add("calscale", "gregorian")
 
