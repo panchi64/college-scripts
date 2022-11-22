@@ -57,6 +57,7 @@ def days_class_happens(days):
 
 # Open the old UPRM portal with selenium
 print("Downloading Google Chrome for automated usage.")
+# TODO: See if there is a way to completely remove all traces of the script running by deleting the chrome driver after script completion.
 browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
 print("Google Chrome installed, launching to Old UPRM Portal")
