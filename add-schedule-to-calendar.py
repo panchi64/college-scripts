@@ -1,63 +1,56 @@
 # To gather the class schedules
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-
-from selenium.webdriver.common.keys import Keys as press_key
-from selenium.webdriver.common.by import By
-
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-
-from selenium.common.exceptions import WebDriverException
-
-# To create and hydrate the ics calendar file
-import pytz
 import os
-
-import icalendar
-from icalendar import Calendar, Event
-
-from pathlib import Path
-
-from datetime import datetime, timedelta
-from dateutil import rrule
-
 # Information parsing
 import re
-
+from datetime import datetime, timedelta
 # Asking user where to place the created .ics file
 from tkinter import Tk
 from tkinter import filedialog
+
+import icalendar
+# To create and hydrate the ics calendar file
+import pytz
+from dateutil import rrule
+from icalendar import Calendar, Event
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
+
 
 # Calculate the date x amount of weeks from given date
 def get_date_x_weeks_later(date, num_weeks):
     td = timedelta(weeks=num_weeks)
     return date + td
 
-# Uses the parsed day data and produces a string usable by the icalendar library for an event 
+
+# Uses the parsed day data and produces a string usable by the icalendar library for an event
 def days_class_happens(days):
     response = []
     for char in days:
-        if(char == "L"):
+        if char == "L":
             response.append(rrule.MO)
-        elif(char == "M"):
+        elif char == "M":
             response.append(rrule.TU)
-        elif(char == "W"):
+        elif char == "W":
             response.append(rrule.WE)
-        elif(char == "J"):
+        elif char == "J":
             response.append(rrule.TH)
-        elif(char == "V"):
+        elif char == "V":
             response.append(rrule.FR)
-        elif(char == "S"):
+        elif char == "S":
             response.append(rrule.SA)
-        elif(char == "D"):
+        elif char == "D":
             response.append(rrule.SU)
     return response
 
+
 # Open the old UPRM portal with selenium
 print("Downloading Google Chrome for automated usage...")
-# TODO: See if there is a way to completely remove all traces of the script running by deleting the chrome driver after script completion.
+# TODO: See if there is a way to completely remove all traces of the script running by deleting the chrome driver
+#  after script completion.
 browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
 print("Google Chrome installed, launching to Old UPRM Portal")
@@ -66,7 +59,7 @@ assert "LOGIN" in browser.title
 
 # Wait for the user to log in (timeout of 10 mins)
 print("Please log in...")
-WebDriverWait(browser, 600).until(EC.url_contains("home.php"))
+WebDriverWait(browser, 600).until(ec.url_contains("home.php"))
 assert "My Home" in browser.title
 
 # Direct the user into the schedule page
@@ -124,43 +117,51 @@ cal.add_component(tzc)
 
 uid = 0
 
-# Iterate through the list of classes and create events lasting a semester (17 weeks) for each class on their corresponding days
+# Iterate through the list of classes and create events lasting a semester (17 weeks) for each class on their
+# corresponding days
 for c in class_list:
+    # Parse information
+    name = re.search(r"[A-Z]{4}\d{4}", c).group()
+
+    # This circumvents the phantom professor scenario
     try:
-        # Parse information
-        name = re.search(r"[A-Z]{4}\d{4}", c).group()
-        desc = re.search(r"\n(.*)\n*(.*)", c).group()
-        section = re.search(r"\s\d{3}\s", c).group()
-        section = section.strip()
-        room = re.search(r"[A-Z]+[ ]\d{3}[A-Z]*", c).group()
-        days = re.search(r"\s\s[J-W]{1,5}\s\s", c).group()
-        days = days.strip()
+        prof = re.search(r"\n(.*)\n*(.*)", c).group()
+        prof = prof.replace("\n", "")
+    except AttributeError:
+        prof = ""
 
-        time = re.findall(r"\d+:\d+\s\w+", c)
-        s_time = datetime.strptime(time[0], "%I:%M %p").replace(day=datetime.now().day, year=datetime.now().year, month=datetime.now().month)
-        e_time = datetime.strptime(time[1], "%I:%M %p").replace(day=datetime.now().day, year=datetime.now().year, month=datetime.now().month)
+    section = re.search(r"\s\d{3}\s", c).group()
+    section = section.strip()
+    room = re.search(r"[A-Z]+[ ]\d{3}[A-Z]*", c).group()
+    days = re.search(r"\s\s[J-W]{1,5}\s\s", c).group()
+    days = days.strip()
 
-        course = Event()
-        course.add("summary", name + "-" + section)
-        course.add("description", desc)
-        course.add("location", room)
-        
-        course.add("dtstart", pr_tz.localize(s_time))
-        course.add("dtend", pr_tz.localize(e_time))
-        
-        # Recurrency details
-        course.add("rrule", {"freq": "weekly", "interval":"1", "wkst":"su", "until": get_date_x_weeks_later(pr_tz.localize(datetime.now()), 17), "byday": days_class_happens(days)})
+    time = re.findall(r"\d+:\d+\s\w+", c)
+    s_time = datetime.strptime(time[0], "%I:%M %p").replace(day=datetime.now().day, year=datetime.now().year,
+                                                            month=datetime.now().month)
+    e_time = datetime.strptime(time[1], "%I:%M %p").replace(day=datetime.now().day, year=datetime.now().year,
+                                                            month=datetime.now().month)
 
-        course.add("status", "CONFIRMED")
-        course.add("transp", "OPAQUE")
+    course = Event()
+    course.add("summary", name + "-" + section)
+    course.add("description", prof)
+    course.add("location", room)
 
-        course.add("dtstamp", datetime.now())
+    course.add("dtstart", pr_tz.localize(s_time))
+    course.add("dtend", pr_tz.localize(e_time))
 
-        cal.add_component(course)
-        uid += 1
+    # Recurrence details
+    course.add("rrule", {"freq": "weekly", "interval": "1", "wkst": "su",
+                         "until": get_date_x_weeks_later(pr_tz.localize(datetime.now()), 17),
+                         "byday": days_class_happens(days)})
 
-    except AttributeError as e:
-        print("One of the attributes was not found. More details: " + e)
+    course.add("status", "CONFIRMED")
+    course.add("transp", "OPAQUE")
+
+    course.add("dtstamp", datetime.now())
+
+    cal.add_component(course)
+    uid += 1
 
 # Create .ics file
 cal_file = open(os.path.join(parent_dir, "class_schedule.ics"), "wb")
