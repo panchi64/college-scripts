@@ -27,9 +27,9 @@ def get_date_x_weeks_later(date, num_weeks):
 
 
 # Uses the parsed day data and produces a string usable by the icalendar library for an event
-def days_class_happens(days):
+def days_class_happens(days_input):
     response = []
-    for char in days:
+    for char in days_input:
         if char == "L":
             response.append(rrule.MO)
         elif char == "M":
@@ -130,10 +130,13 @@ for c in class_list:
     except AttributeError:
         prof = ""
 
-    section = re.search(r"\s\d{3}\s", c).group() if re.search(r"\s\d{3}\s", c) else "N/A"
+    section = re.search(r"\s\d{3}\w?\s", c).group()
     section = section.strip()
     room = re.search(r"[A-Z]+ \d{3}[A-Z]*", c).group() if re.search(r"[A-Z]+ \d{3}[A-Z]*", c) else "N/A"
-    days = re.search(r"\s\s[J-W]{1,5}\s\s", c).group() if re.search(r"\s\s[J-W]{1,5}\s\s", c) else "N/A"
+    if re.search(r"\s\s[J-W]{1,5}\s\s", c):
+        days = re.search(r"\s\s[J-W]{1,5}\s\s", c).group()
+    else:
+        continue
     days = days.strip()
 
     time = re.findall(r"\d+:\d+\s\w+", c)
@@ -144,18 +147,13 @@ for c in class_list:
                                                                 month=datetime.now().month)
 
     course = Event()
+    course.add("uid", uid)
     course.add("summary", name + "-" + section)
     course.add("description", prof)
     course.add("location", room)
 
-    try:
-        s_time
-        e_time
-    except NameError:
-        print("The starting time and ending time for the course was not found, not placing them in the calendar")
-    else:
-        course.add("dtstart", pr_tz.localize(s_time))
-        course.add("dtend", pr_tz.localize(e_time))
+    course.add("dtstart", pr_tz.localize(s_time))
+    course.add("dtend", pr_tz.localize(e_time))
 
     # Recurrence details
     course.add("rrule", {"freq": "weekly", "interval": "1", "wkst": "su",
