@@ -130,25 +130,32 @@ for c in class_list:
     except AttributeError:
         prof = ""
 
-    section = re.search(r"\s\d{3}\s", c).group()
+    section = re.search(r"\s\d{3}\s", c).group() if re.search(r"\s\d{3}\s", c) else "N/A"
     section = section.strip()
-    room = re.search(r"[A-Z]+[ ]\d{3}[A-Z]*", c).group()
-    days = re.search(r"\s\s[J-W]{1,5}\s\s", c).group()
+    room = re.search(r"[A-Z]+ \d{3}[A-Z]*", c).group() if re.search(r"[A-Z]+ \d{3}[A-Z]*", c) else "N/A"
+    days = re.search(r"\s\s[J-W]{1,5}\s\s", c).group() if re.search(r"\s\s[J-W]{1,5}\s\s", c) else "N/A"
     days = days.strip()
 
     time = re.findall(r"\d+:\d+\s\w+", c)
-    s_time = datetime.strptime(time[0], "%I:%M %p").replace(day=datetime.now().day, year=datetime.now().year,
-                                                            month=datetime.now().month)
-    e_time = datetime.strptime(time[1], "%I:%M %p").replace(day=datetime.now().day, year=datetime.now().year,
-                                                            month=datetime.now().month)
+    if len(time) > 0:
+        s_time = datetime.strptime(time[0], "%I:%M %p").replace(day=datetime.now().day, year=datetime.now().year,
+                                                                month=datetime.now().month)
+        e_time = datetime.strptime(time[1], "%I:%M %p").replace(day=datetime.now().day, year=datetime.now().year,
+                                                                month=datetime.now().month)
 
     course = Event()
     course.add("summary", name + "-" + section)
     course.add("description", prof)
     course.add("location", room)
 
-    course.add("dtstart", pr_tz.localize(s_time))
-    course.add("dtend", pr_tz.localize(e_time))
+    try:
+        s_time
+        e_time
+    except NameError:
+        print("The starting time and ending time for the course was not found, not placing them in the calendar")
+    else:
+        course.add("dtstart", pr_tz.localize(s_time))
+        course.add("dtend", pr_tz.localize(e_time))
 
     # Recurrence details
     course.add("rrule", {"freq": "weekly", "interval": "1", "wkst": "su",
