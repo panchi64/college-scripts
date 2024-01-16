@@ -115,8 +115,6 @@ tzs.add('dtstart', datetime(1970, 1, 1, 0, 0, 0))
 tzc.add_component(tzs)
 cal.add_component(tzc)
 
-uid = 0
-
 # Iterate through the list of classes and create events lasting a semester (17 weeks) for each class on their
 # corresponding days
 for c in class_list:
@@ -147,9 +145,9 @@ for c in class_list:
                                                                 month=datetime.now().month)
 
     course = Event()
-    course.add("uid", uid)
     course.add("summary", name + "-" + section)
-    course.add("description", prof)
+    if prof:
+        course.add("description", prof)
     course.add("location", room)
 
     course.add("dtstart", pr_tz.localize(s_time))
@@ -166,7 +164,6 @@ for c in class_list:
     course.add("dtstamp", datetime.now())
 
     cal.add_component(course)
-    uid += 1
 
 # Create .ics file
 cal_file = open(os.path.join(parent_dir, "class_schedule.ics"), "wb")
