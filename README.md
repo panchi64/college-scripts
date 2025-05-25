@@ -1,30 +1,55 @@
-# College Scripts
+# Personal Scripts
 
-The following sections will describe the details of what each script does and how it works as well as its dependencies. Feel free to use them as you wish if you find any useful 😄.
+A collection of automation scripts designed to solve everyday computing problems and improve quality of life. These scripts address various personal workflow inefficiencies and repetitive tasks that many of us encounter in our daily computer usage.
 
-## Class note setup script _setup-class-note.py_
+Feel free to use, modify, or draw inspiration from any of these scripts if you find them useful! 😄
 
-This script asks the user for a directory on where to create a file. Upon the user choosing where they want their document to be generated, the script will create a Markdown file in that location with the file name being the date and a number using the format `Date-Day-Year(-Index)` (the index is added depending whether there are other files of the same type using the same name already in that location).
+## Index
 
-### Class note - Dependencies
+### Python Scripts
+- [Class Note Setup Script](#class-note-setup-script---setup-class-notepy) - Automated note file creation with date-based naming
+- [Schedule Import Script](#schedule-import-script---add-schedule-to-calendarpy) - UPRM web portal schedule extraction to calendar format
 
-Use pip install [dependency name] to installed the dependency (if pip doesn't work try using pip3)
+### Bash Scripts
+- [Bluetooth Fix Script](#bluetooth-fix-script---bluetooth_fixsh) - Bluetooth kept bugging out on PopOS! so I created this Intel Bluetooth USB power management fix
 
+---
+
+## Python Scripts
+
+### Class Note Setup Script - `setup-class-note.py`
+
+**Location:** `python/setup-class-note.py`
+
+This script streamlines the process of creating organized note files. It prompts the user to select a directory and automatically generates a Markdown file with a standardized naming convention using the format `Date-Day-Year(-Index)`. If files with the same date already exist, an index number is appended to ensure uniqueness.
+
+**Use Cases:**
+- Daily journaling with consistent file naming
+- Meeting notes organization
+- Study session documentation
+- Any time-stamped document creation
+
+**Dependencies:**
+Use `pip install [dependency name]` to install dependencies (try `pip3` if `pip` doesn't work):
 - tkinter
 - datetime
 
-## Add class schedule to calendar script _add-schedule-to-calendar.py_
+### Schedule Import Script - `add-schedule-to-calendar.py`
 
-This script uses Selenium in order to scrape the UPRM portal website and generate an .ics file containing class' schedules. This file can be imported to any calendar application.
+**Location:** `python/add-schedule-to-calendar.py`
 
-NOTE The application does not gather or store any information other than the courses found, your log-in information is never touched.
+This script automates the process of extracting schedule information from the UPRM (University of Puerto Rico - Mayaguez) web portal and converting it into a universal calendar format. Using Selenium for web scraping, it generates an `.ics` file that can be imported into any calendar application.
 
-(The courses are removed from memory once the application closes, feel free to look at the source code :D)
+**Use Cases:**
+- Importing class schedules to personal calendars
+- Converting work schedules from company portals
+- Migrating event data between different calendar systems
+- Automating recurring schedule updates
 
-### Add schedule - Dependencies
+**Privacy Note:** This application does not gather or store any personal information. Login credentials are handled locally and never transmitted or saved. Source code is available for verification.
 
-Use pip install [dependency name] to installed the dependency (if pip doesn't work try using pip3)
-
+**Dependencies:**
+Use `pip install [dependency name]` to install dependencies (try `pip3` if `pip` doesn't work):
 - selenium
 - pytz
 - os
@@ -32,3 +57,55 @@ Use pip install [dependency name] to installed the dependency (if pip doesn't wo
 - datetime
 - dateutil
 - pathlib
+
+---
+
+## Bash Scripts
+
+### Bluetooth Fix Script - `bluetooth_fix.sh`
+
+**Location:** `bash/bluetooth_fix.sh`
+
+A comprehensive script that fixes common Intel Bluetooth USB power management issues, particularly for Intel AX200 and similar controllers. The script automatically detects Intel Bluetooth devices, fixes USB power management settings, restarts services, and creates persistent fixes that survive reboots.
+
+**Use Cases:**
+- Fixing Bluetooth connectivity issues on Linux systems
+- Resolving Intel Bluetooth controller power management problems
+- Automating Bluetooth service recovery
+- Creating persistent fixes for recurring Bluetooth issues
+
+**Features:**
+- Automatic Intel Bluetooth device detection
+- USB power management correction
+- Bluetooth service restart automation
+- Persistent udev rule creation
+- Colored output with detailed status reporting
+- Multiple operation modes (check-only, force, help)
+
+**Usage:**
+```bash
+# Basic fix (requires sudo)
+sudo ./bluetooth_fix.sh
+
+# Check status only (no sudo required)
+./bluetooth_fix.sh --check-only
+
+# Force fix even if Bluetooth appears working
+sudo ./bluetooth_fix.sh --force
+
+# Show help
+./bluetooth_fix.sh --help
+```
+
+**Dependencies:**
+- systemctl (systemd)
+- bluetoothctl (BlueZ)
+- lsusb (usbutils)
+- modprobe (kernel modules)
+- udevadm (udev)
+
+---
+
+## Future Scripts
+
+This repository will continue to grow with scripts that address various quality of life improvements.
